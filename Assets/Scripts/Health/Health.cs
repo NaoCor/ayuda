@@ -12,8 +12,11 @@ public class Health : MonoBehaviour
     private Animator anim;
     private bool dead;
 
+    [SerializeField] private GameObject gameOverMenu;
 
-    
+
+
+
 
     private void Awake()
     {
@@ -36,6 +39,11 @@ public class Health : MonoBehaviour
                 anim.SetTrigger("die");
                 GetComponent<CharacterController>().enabled = false;
                 dead = true;
+
+                if (gameOverMenu != null)
+                {
+                    gameOverMenu.SetActive(true);
+                }
             }
         }
     }

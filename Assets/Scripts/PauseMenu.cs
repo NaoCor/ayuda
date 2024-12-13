@@ -117,10 +117,5 @@ public class PauseMenu : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    private void Respawn()
-    {
-        menuGameOver.GameOver();
-
-        return;
-    }
+   
 }

@@ -6,16 +6,22 @@ using UnityEngine.SceneManagement;
 
 public class MenuGameOver : MonoBehaviour
 {
-    [SerializeField] private GameObject gameOverScreen;
     [SerializeField] private GameObject menuGameOver;
-    private CombateJugador combateJugador;
 
-    public void GameOver()
+    
+    
+
+    
+
+   
+
+    private void ActivarMenu(object sender, EventArgs e)
     {
-        gameOverScreen.SetActive(true);
+        menuGameOver.SetActive(true);
     }
 
-  
+
+
     public void Reiniciar()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);

@@ -18,8 +18,11 @@ public class PauseMenu : MonoBehaviour
     private float lastVolume;
     [Header("Panels")]
     public GameObject optionPanel;
+    public GameObject gameOverUI;
     [Header("Pause")]
     [SerializeField] private GameObject Pause;
+
+    private MenuGameOver menuGameOver;
 
 
     private void Awake()
@@ -27,6 +30,7 @@ public class PauseMenu : MonoBehaviour
         volumeFX.onValueChanged.AddListener(ChangeVolumeFX);
         volumeMaster.onValueChanged.AddListener(ChangeVolumeMaster);
         Pause.SetActive(false);
+        menuGameOver = FindAnyObjectByType<MenuGameOver>();
     }
     private void Update()
     {
@@ -106,5 +110,17 @@ public class PauseMenu : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false; //Exits play mode
 #endif
+    }
+
+    public void gameOver()
+    {
+        gameObject.SetActive(true);
+    }
+
+    private void Respawn()
+    {
+        menuGameOver.GameOver();
+
+        return;
     }
 }

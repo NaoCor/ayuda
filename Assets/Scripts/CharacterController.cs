@@ -4,91 +4,112 @@ using UnityEngine;
 
 public class CharacterController : MonoBehaviour
 {
-    [Header("Movimiento")]
-    public float velocidad = 5f;
-    public float fuerzaSalto = 7f;
-    public int maxSaltos = 2; // Cantidad de saltos permitidos
+    [Header("Movement Parameters")]
+    [SerializeField] private float speed;
+    [SerializeField] private float jumpPower;
 
-    [Header("Componentes")]
-    private Rigidbody2D rigidbody2D;
-    private BoxCollider2D boxCollider;
+    [Header("Coyote Time")]
+    [SerializeField] private float coyoteTime; // Tiempo para saltar después de salir del suelo
+    private float coyoteCounter; // Contador de tiempo fuera del suelo
+
+    [Header("Multiple Jumps")]
+    [SerializeField] private int extraJumps;
+    private int jumpCounter;
+
+    [Header("Layers")]
+    [SerializeField] private LayerMask groundLayer;
+
+
+    private Rigidbody2D body;
     private Animator animator;
-
+    private BoxCollider2D boxCollider;
+    private float horizontalInput;
     private bool mirandoDerecha = true;
-    private int saltosRestantes;
+    private bool ground;
 
-    void Start()
+    private void Awake()
     {
-        rigidbody2D = GetComponent<Rigidbody2D>();
-        boxCollider = GetComponent<BoxCollider2D>();
+        // Referencias a componentes
+        body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-
-        // Inicializa los saltos restantes
-        saltosRestantes = maxSaltos;
+        boxCollider = GetComponent<BoxCollider2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        ProcesarMovimiento();
-        ProcesarSalto();
-    }
+        horizontalInput = Input.GetAxis("Horizontal");
 
-    void ProcesarSalto()
-    {
-        // Comprobamos si se presiona la tecla de salto y quedan saltos disponibles
-        if (Input.GetKeyDown(KeyCode.Space) && saltosRestantes > 0)
-        {
-            rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, fuerzaSalto);
-            animator.SetTrigger("Jump");
-            saltosRestantes--; // Reduce el número de saltos restantes
-        }
+        // Voltear al personaje al moverse
+        GestionarOrientacion(horizontalInput);
 
-        // Reinicia los saltos al tocar el suelo
-        if (EstaEnSuelo())
+        // Configurar animaciones
+        animator.SetBool("isRunning", horizontalInput != 0f);
+        animator.SetBool("grounded", isGrounded());
+
+        // Saltar
+        if (Input.GetKeyDown(KeyCode.Space))
+            Jump();
+
+        // Ajustar altura del salto
+        if (Input.GetKeyUp(KeyCode.Space) && body.velocity.y > 0)
+            body.velocity = new Vector2(body.velocity.x, body.velocity.y / 2);
+
+        // Aplicar movimiento horizontal
+        body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+
+        if (isGrounded())
         {
-            saltosRestantes = maxSaltos;
-            animator.SetBool("isGrounded", true);
+            coyoteCounter = coyoteTime; // Reiniciar contador al tocar el suelo
+            jumpCounter = extraJumps;  // Reiniciar saltos extra
         }
         else
         {
-            animator.SetBool("isGrounded", false);
+            coyoteCounter -= Time.deltaTime; // Reducir tiempo fuera del suelo
         }
     }
 
-    void ProcesarMovimiento()
+    private void Jump()
     {
-        float inputMovimiento = Input.GetAxis("Horizontal");
+        if (coyoteCounter <= 0 && jumpCounter <= 0) return;
 
-        // Movimiento horizontal continuo
-        rigidbody2D.velocity = new Vector2(inputMovimiento * velocidad, rigidbody2D.velocity.y);
-
-        // Animación de correr
-        animator.SetBool("isRunning", inputMovimiento != 0);
-
-        // Gestionar orientación
-        GestionarOrientacion(inputMovimiento);
-    }
-
-    void GestionarOrientacion(float inputMovimiento)
-    {
-        if ((mirandoDerecha && inputMovimiento < 0) || (!mirandoDerecha && inputMovimiento > 0))
+        if (isGrounded() || coyoteCounter > 0)
         {
-            mirandoDerecha = !mirandoDerecha;
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            body.velocity = new Vector2(body.velocity.x, jumpPower);
         }
+        else if (jumpCounter > 0) // Saltos extra
+        {
+            body.velocity = new Vector2(body.velocity.x, jumpPower);
+            jumpCounter--;
+        }
+
+        // Reiniciar contador para evitar dobles saltos no deseados
+        coyoteCounter = 0;
     }
 
-
-    bool EstaEnSuelo()
+    private bool isGrounded()
     {
         RaycastHit2D raycastHit = Physics2D.BoxCast(
             boxCollider.bounds.center,
             boxCollider.bounds.size,
-            0f,
+            0,
             Vector2.down,
             0.1f,
-            LayerMask.GetMask("Ground")
+            groundLayer
         );
         return raycastHit.collider != null;
+    }
+
+    private void GestionarOrientacion(float inputMovimiento)
+    {
+        if ((mirandoDerecha && inputMovimiento < 0) || (!mirandoDerecha && inputMovimiento > 0))
+        {
+            mirandoDerecha = !mirandoDerecha;
+            transform.localScale = new Vector2(-transform.localScale.x, transform.localScale.y);
+        }
+    }
+
+    public bool canAttack()
+    {
+        return horizontalInput == 0 && isGrounded();
     }
 }

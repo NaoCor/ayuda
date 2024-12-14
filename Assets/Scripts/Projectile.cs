@@ -32,8 +32,17 @@ public class Projectile : MonoBehaviour
         anim.SetTrigger("explote");
 
         if (collision.tag == "Enemy")
-            collision.GetComponent<Health>()?.TakeDamage(1);
+        {
+            EnemyHealth health = collision.GetComponent<EnemyHealth>();
+            if (health != null)
+            {
+                health.TakeDamage(1);
+                Debug.Log("¡El enemigo ha recibido daño!"); 
+            }
+        }
     }
+
+
     public void SetDirection(float _direction)
     {
         lifetime = 0;

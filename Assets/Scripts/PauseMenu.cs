@@ -42,17 +42,7 @@ public class PauseMenu : MonoBehaviour
                 PauseGame(true);
         }
     }
-    public void SetMute()
-    {
-
-        if (mute.isOn)
-        {
-            mixer.GetFloat("VolMaster", out lastVolume);
-            mixer.SetFloat("VolMaster", -80);
-        }
-
-        else mixer.SetFloat("VolMaster", lastVolume);
-    }
+  
 
     public void openPanel(GameObject panel)
     {

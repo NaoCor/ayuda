@@ -8,12 +8,12 @@ public class MenuGameOver : MonoBehaviour
 {
     [SerializeField] private GameObject menuGameOver;
 
-    
-    
 
-    
 
-   
+
+
+
+
 
     private void ActivarMenu(object sender, EventArgs e)
     {
@@ -34,7 +34,10 @@ public class MenuGameOver : MonoBehaviour
 
     public void salir()
     {
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
+#else
         Application.Quit();
+#endif
     }
 }
